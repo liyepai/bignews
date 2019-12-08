@@ -91,14 +91,39 @@
       $.ajax({
         url: window.BigNew.user_login,
         type: "post",
-        data:{
-          username:name,
-          password:pass
+        data: {
+          username: name,
+          password: pass
         },
         //有加上这个 等等返回的数据  是一个对象 如果没加 等等返回的是一个json格式的字符串还得自己转换成对象，后台帮我们做好了
         dataType: "json",
         success: function(res) {
-          //以前我们是这样判断的，但是这样可以简化下
+          //因为，我们不敢对于错  都需要弹窗出来提示的  所以可以把模态放在外面
+          $(".modal-body").text(res.msg);
+          $("#myModal").modal();
+          //如果正确 我们再跳转  不正确就不理他了
+          //将返回的token设置保存在本地
+          if (res.code === 200) {
+            //将这个token里存到本地
+            localStorage.setItem("token", res.token);
+            //跳转的做法1：
+            // $('.btn-default').on('click',function(){
+            // location.href='./index.html'
+            // })
+            //跳转的做法2：
+            $("#myModal").on("hidden.bs.modal", function(e) {
+              window.location.href = "./index.html";
+            });
+          }
+          //现在这里已经可以实现登陆成功，但是  如果别人在地址栏直接输入：http://127.0.0.1:5500/admin/index.html
+          //也是可以访问到的，这样我们设置密码登陆的意义就没有了，所有我们就有了token认证
+          //token认证：如果我们登陆成功 这个res里面有个token属性，值是一串字符串，我们可以通过这个来辨认用户是否是从登陆入口进来的。
+          //思路：在登陆成功===200的时候，在里面将这个token存到本地 在后台主页的时候获取验证
+
+
+
+
+            //以前我们是这样判断的，但是这样可以简化下
           // if (res.code == 200) {
           //   $(".modal-body").text("登录成功，即将跳转");
           //   $("#myModal").modal();
@@ -107,29 +132,6 @@
           //   $(".modal-body").text("账号或密码错误");
           //   $("#myModal").modal();
           // }
-
-
-          //因为，我们不敢对于错  都需要弹窗出来提示的  所以可以把模态放在外面
-            $(".modal-body").text(res.msg);
-            $("#myModal").modal();
-          //如果正确 我们再跳转  不正确就不理他了
-          if(res.code===200){
-            //将这个token里存到本地
-            localStorage.setItem('token',res.token);
-            //跳转的做法1：
-            // $('.btn-default').on('click',function(){
-            // location.href='./index.html'           
-            // })
-            //跳转的做法2：
-            $('#myModal').on('hidden.bs.modal', function (e) {
-                window.location.href = './index.html';
-              })
-          }
-           //现在这里已经可以实现登陆成功，但是  如果别人在地址栏直接输入：http://127.0.0.1:5500/admin/index.html
-           //也是可以访问到的，这样我们设置密码登陆的意义就没有了，所有我们就有了token认证
-           //token认证：如果我们登陆成功 这个res里面有个token属性，值是一串字符串，我们可以通过这个来辨认用户是否是从登陆入口进来的。
-           //思路：在登陆成功===200的时候，在里面将这个token存到本地 在后台主页的时候获取验证
-          
 
         }
       });
